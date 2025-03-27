@@ -26,15 +26,16 @@ public class TokenUtil {
 
     private static final String SECRET_KEY = "hIq7PODBVRTbqWyCAcZ0ytRdUWqai+fk7iPuSL8YnW0=";
 
-    // مدة صلاحية التوكين (بالثواني)
-    private static final int TOKEN_VALIDITY = 3600 * 5;
+    
+    private static final int TOKEN_VALIDITY = 30 * 24 * 60 * 60 * 1000; 
 
-    // استخراج اسم المستخدم من التوكين
+
+    
     public String getEmailFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
-    // استخراج أي بيانات من التوكين بناءً على Claims
+    
     private <T> T getClaimFromToken(String token, Function<Claims, T> claimResolver) {
         final Claims claims = getAllClaimsFromToken(token);
         return claimResolver.apply(claims);
@@ -95,12 +96,22 @@ public class TokenUtil {
         }
         return null;
     }
-
+public Long getIdFromBearerJwt(String bearerToken ) {
+	
+	if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+        bearerToken= bearerToken.substring(7);
+        return getClaimFromToken(bearerToken, claims -> claims.get("userId", Long.class));    
+    }
+    return null;
+	
+	
+}
     // توليد التوكين
     public String generateToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userName", userDetails.getFirstname() + " " + userDetails.getLastname());
         claims.put("Status", userDetails.isEnabled());
+        claims.put("userId", userDetails.getId());
         List<String> roles = userDetails.getAuthorities().stream()
                                          .map(GrantedAuthority::getAuthority)
                                          .collect(Collectors.toList());

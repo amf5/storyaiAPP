@@ -1,4 +1,5 @@
 package com.storyAi.story_AI.security;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +18,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"Unauthorized: Invalid or missing token.\"}"+authException.getMessage());
+        response.setCharacterEncoding("UTF-8"); // يضمن دعم الأحرف غير الإنجليزية
+
+        String jsonResponse = String.format("{\"error\": \"Unauthorized: Invalid or missing token.\", \"message\": \"%s\"}",
+                authException.getMessage());
+
+        response.getWriter().write(jsonResponse);
     }
 }
-

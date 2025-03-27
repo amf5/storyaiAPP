@@ -1,6 +1,7 @@
 package com.storyAi.story_AI.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import io.micrometer.common.lang.NonNull;
 import jakarta.persistence.CascadeType;
@@ -13,7 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import jakarta.validation.constraints.Email;
@@ -50,10 +51,40 @@ private String LastName;
 @NonNull
 @Email
 private String email;
-
 private String password;
 private String verificationCode;
 private boolean status;
+@OneToMany(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+private List<Book>books; 
+@OneToMany(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+private List<History>historties; 
+@OneToMany(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+private List<Love>loves; 
+
+public List<Book> getBooks() {
+	return books;
+}
+
+public void setBooks(List<Book> books) {
+	this.books = books;
+}
+
+public List<History> getHistorties() {
+	return historties;
+}
+
+public void setHistorties(List<History> historties) {
+	this.historties = historties;
+}
+
+public List<Love> getLoves() {
+	return loves;
+}
+
+public void setLoves(List<Love> loves) {
+	this.loves = loves;
+}
+
 @ManyToMany(fetch = FetchType.EAGER,cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
 @JoinTable(name="User_Role", joinColumns = {
 	@JoinColumn(name="User_Id")

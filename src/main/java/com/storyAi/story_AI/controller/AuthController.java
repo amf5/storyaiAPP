@@ -3,6 +3,7 @@ package com.storyAi.story_AI.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -92,7 +93,11 @@ private UserRepository repository;
       return authService.forgotMyPassword(email);
    }
    @PostMapping("/change")
-   public ResponseEntity<?> change(@RequestBody ChangeMyPassword changeMyPassword) {
+   public ResponseEntity<?> change(@RequestBody ChangeMyPassword changeMyPassword,
+		   @RequestHeader("Authorization")String jwt) throws Exception {
+	   Long userId=tokenUtil.getIdFromBearerJwt(jwt);
+	   User user=repository.findById(userId).orElseThrow(()->new Exception("user not found"));
+	   changeMyPassword.setEmail(user.getEmail());
       return authService.changeMyPassword(changeMyPassword);
    }
 @GetMapping()

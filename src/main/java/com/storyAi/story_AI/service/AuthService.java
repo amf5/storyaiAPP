@@ -3,7 +3,7 @@ package com.storyAi.story_AI.service;
 
 
 
-import java.lang.StackWalker.Option;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.stereotype.Service;
 
 import com.storyAi.story_AI.dto.ActivateAccount;
+import com.storyAi.story_AI.dto.AuthResponse;
 import com.storyAi.story_AI.dto.ChangeMyPassword;
 import com.storyAi.story_AI.dto.Login;
 
@@ -72,7 +73,8 @@ public ResponseEntity<?> login( Login login) throws Exception {
         String jwt = jwtUtil.generateToken(userDetails);
 user.setToken(jwt);
 repository.save(user);
-        return ResponseEntity.ok(jwt); 
+AuthResponse authResponse=new AuthResponse(user.getId(),jwt);
+        return ResponseEntity.ok(authResponse); 
 
     } catch (Exception e) {
         return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
@@ -141,7 +143,9 @@ public ResponseEntity<?> activateAccount(ActivateAccount account){
 		String token=	 jwtUtil.generateToken(new CustomUserDetails(user.get()));
 		user.get().setToken(token);
 		repository.save(user.get());
-			return ResponseEntity.ok().body(token);
+		AuthResponse authResponse=new AuthResponse(user.get().getId(),token);
+        return ResponseEntity.ok(authResponse); 
+		
 
 		}else {
 			
@@ -209,7 +213,10 @@ public ResponseEntity<?> resentCode(String email) throws MessagingException{
                   newUser.setToken(token);
                   repository.save(newUser);
                     current = newUser;
-                } return ResponseEntity.ok().body(token);
+                } 
+                AuthResponse authResponse=new AuthResponse(current.getId(),token);
+                return ResponseEntity.ok(authResponse); 
+                
             } else {
                 return ResponseEntity.status(401).body("Authorized client not found");
             }

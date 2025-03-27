@@ -1,7 +1,8 @@
 package com.storyAi.story_AI.entity;
 
 import java.util.Collection;
-import java.util.stream.Collector;
+import java.util.Collections;
+
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -9,6 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public class CustomUserDetails implements UserDetails {
+	
 private User user;
 
 public CustomUserDetails(User user) {
@@ -17,16 +19,20 @@ public CustomUserDetails(User user) {
 }
 
 
+public Long getId() {
+	return user.getId();
+}
 
 
-
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		
-		return user.getRoles().stream().map(role->new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toList());
-	}
-
-	@Override
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+    return user.getRoles() != null 
+        ? user.getRoles().stream()
+              .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
+              .collect(Collectors.toList()) 
+        : Collections.emptyList();
+}
+@Override
 	public String getPassword() {
 		
 		return user.getPassword();
