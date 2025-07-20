@@ -23,17 +23,12 @@ private User user;
 @ManyToOne(fetch = FetchType.LAZY,cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
 @JoinColumn(name = "book_id")
 private Book book;
-/**
- * 
- */
+
+
 public History() {
 	super();
 }
-/**
- * @param createdAt
- * @param user
- * @param book
- */
+
 public History(LocalDateTime createdAt, User user, Book book) {
 	super();
 	this.createdAt = createdAt;

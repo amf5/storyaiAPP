@@ -1,4 +1,6 @@
 package com.storyAi.story_AI.controller;
+import java.io.InputStream;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +21,8 @@ import com.storyAi.story_AI.security.TokenUtil;
 import com.storyAi.story_AI.service.BookService;
 import com.storyAi.story_AI.service.CloudinaryService;
 
+import io.jsonwebtoken.io.IOException;
+
 @RestController
 @RequestMapping("/user/books")
 public class BookController {
@@ -34,23 +38,32 @@ public BookController(BookService bookService,ObjectMapper objectMapper,Cloudina
 	this.tokenUtil=tokenUtil;
 }
 
-
 @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 public ResponseEntity<?> createBook(
         @RequestPart("data") String bookRequestJson,
         @RequestPart("coverImage") MultipartFile coverImage,
         @RequestParam("userId") Long userId,
-        @RequestHeader("Authorization")String jwt) throws Exception {
-   Long userIdCompare=tokenUtil.getIdFromBearerJwt(jwt);
-   
-   if(!userId.equals(userIdCompare)||userIdCompare.equals(null)) {
-	   throw new Exception("Error....you dont have this id");
-   }
-   
-    BookDto bookDto=objectMapper.readValue(bookRequestJson, BookDto.class);
-    String imageUrl = cloudinaryService.uploadFile(coverImage);
+        @RequestHeader("Authorization") String jwt) throws Exception {
 
-    return new  ResponseEntity(bookService.createBook(userIdCompare, bookDto),HttpStatus.ACCEPTED);
+   
+    Long userIdCompare = tokenUtil.getIdFromBearerJwt(jwt);
+   
+    if (!userId.equals(userIdCompare) || userIdCompare == null) {
+        throw new Exception("Error....you don't have this id");
+    }
+   
+   
+    BookDto bookDto = objectMapper.readValue(bookRequestJson, BookDto.class);
+   
+   
+    try (InputStream inputStream = coverImage.getInputStream()) {
+        String imageUrl = cloudinaryService.uploadFileFromStream(inputStream);
+        bookDto.setCoverImage(imageUrl);
+    } catch (IOException e) {
+        throw new RuntimeException("Error while uploading cover image", e);
+    }
+    
+    return new ResponseEntity<>(bookService.createBook(userIdCompare, bookDto), HttpStatus.ACCEPTED);
 }
 
 

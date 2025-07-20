@@ -1,14 +1,16 @@
 package com.storyAi.story_AI.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 import jakarta.persistence.CascadeType;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 
 @Entity
@@ -19,7 +21,9 @@ private Long bookId;
 private String outhor;
 private String language;
 private String nameBook;
-private List<String>pages;
+@Lob
+
+private String page;
 private String introduction;
 private String coverImage;
 private LocalDateTime createdBook;
@@ -63,11 +67,11 @@ public String getNameBook() {
 public void setNameBook(String nameBook) {
 	this.nameBook = nameBook;
 }
-public List<String> getPages() {
-	return pages;
+public String getPages() {
+	return page;
 }
-public void setPages(List<String> pages) {
-	this.pages = pages;
+public void setPage(String page) {
+	this.page = page;
 }
 public String getIntroduction() {
 	return introduction;
@@ -87,22 +91,14 @@ public String getAbout() {
 public void setAbout(String about) {
 	this.about = about;
 }
-/**
- * @param outhor
- * @param language
- * @param nameBook
- * @param pages
- * @param introduction
- * @param user
- * @param about
- */
-public Book(String outhor, String language, String nameBook, List<String> pages, String introduction, User user,
+
+public Book(String outhor, String language, String nameBook, String page, String introduction, User user,
 		String about,String coverImage) {
 	super();
 	this.outhor = outhor;
 	this.language = language;
 	this.nameBook = nameBook;
-	this.pages = pages;
+	this.page = page;
 	this.introduction = introduction;
 	this.user = user;
 	this.coverImage=coverImage;
@@ -114,9 +110,7 @@ public String getCoverImage() {
 public void setCoverImage(String coverImage) {
 	this.coverImage = coverImage;
 }
-/**
- * 
- */
+
 public Book() {
 	super();
 }

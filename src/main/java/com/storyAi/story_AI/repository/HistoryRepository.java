@@ -13,7 +13,7 @@ import com.storyAi.story_AI.entity.History;
 
 @Repository
 public interface HistoryRepository extends JpaRepository<History, Long> {
-	@Query("SELECT new com.storyAi.story_AI.dto.HistoryResponse(h.createdAt, b.nameBook, b.outhor, b.language, b.about, b.introduction, b.pages, b.coverImage,b.createdBook) " +
+	@Query("SELECT new com.storyAi.story_AI.dto.HistoryResponse(h.createdAt, b.nameBook, b.outhor, b.language, b.about, b.introduction, b.page, b.coverImage,b.createdBook) " +
 		       "FROM History h JOIN h.book b WHERE h.user.id = :userId ORDER BY h.createdAt DESC")
 		List<HistoryResponse> getHistories(@Param("userId") Long userId);
 

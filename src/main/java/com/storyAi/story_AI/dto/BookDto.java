@@ -1,7 +1,9 @@
 package com.storyAi.story_AI.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
+import jakarta.persistence.Column;
+
 
 
 
@@ -12,7 +14,8 @@ private String outhor;
 private String language;
 private String about;
 private String introduction;
-private List<String>pages;
+private String page;
+@Column(length = 1000)
 private String coverImage;
 private LocalDateTime createdBook;
 public LocalDateTime getCreatedBook() {
@@ -21,13 +24,13 @@ public LocalDateTime getCreatedBook() {
 public void setCreatedBook(LocalDateTime createdBook) {
 	this.createdBook = createdBook;
 }
-public BookDto(Long bookId,String outhor, String language, String nameBook, List<String> pages, String introduction, 
+public BookDto(Long bookId,String outhor, String language, String nameBook, String page, String introduction, 
 		String about,String coverImage,LocalDateTime createdBook) {
 	super();
 	this.outhor = outhor;
 	this.language = language;
 	this.nameBook = nameBook;
-	this.pages = pages;
+	this.page = page;
 	this.introduction = introduction;
 	this.coverImage=coverImage;
 	this.about = about;
@@ -64,11 +67,11 @@ public String getIntroduction() {
 public void setIntroduction(String introduction) {
 	this.introduction = introduction;
 }
-public List<String> getPages() {
-	return pages;
+public String getPage() {
+	return page;
 }
-public void setPages(List<String> pages) {
-	this.pages = pages;
+public void setPage(String page) {
+	this.page = page;
 }
 public String getCoverImage() {
 	return coverImage;
@@ -82,9 +85,7 @@ public Long getBookId() {
 public void setBookId(Long bookId) {
 	this.bookId = bookId;
 }
-/**
- * 
- */
+
 public BookDto() {
 	super();
 }

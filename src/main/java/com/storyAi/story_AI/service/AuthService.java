@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -84,27 +85,24 @@ AuthResponse authResponse=new AuthResponse(user.getId(),jwt);
 public ResponseEntity<?>signup(Signup signup){
 	Optional<User> user=repository.findByEmail(signup.getEmail());
 	if(user.isPresent()) {
-		
-		return ResponseEntity.status(409).body("User already exists"); 
-	}
-	else if (repository.existsByEmail(signup.getEmail())) {
-		return ResponseEntity.status(409).body("Email already exists"); 
-	}
-	else {
-	
-		Optional<Role> userRole = roleRepository.findByRoleName("USER");
+		if(!user.get().isStatus()) {
+			try {
+				emailService.sendVerificationEmail(user.get().getEmail(), user.get());
+			} catch (Exception e) {
+		        return ResponseEntity.status(500).body("An error occurred while sending the verification email: " + e.getMessage());}
+			 return ResponseEntity.ok("you have aready account before but not activate check your email to activate your account");
+			}return ResponseEntity.status(409).body("User already exists"); 
+	}else {
+	Optional<Role> userRole = roleRepository.findByRoleName("USER");
 Role role;
 Set<Role> roles = new HashSet<>();
         if (!userRole.isPresent()) {
             role = new Role("USER", "write paragraphs to become films");
-           //roleRepository.save(role);
-           roles.add(role);
-        }
+           roleRepository.save(role);
+           roles.add(role);}
         else
         {
-        roles.add(userRole.get()); 
-        }
-	
+        roles.add(userRole.get()); }
 	User newUser=new User(signup.getFirstName(),
 			signup.getLastName(),signup.getEmail(),encoder.encode(signup.getPassword()),
 			false,roles);
@@ -182,9 +180,7 @@ public ResponseEntity<?> resentCode(String email) throws MessagingException{
 
 
 }
-
- // login by provider any why (Google,Facebook)
-   public ResponseEntity<?> loginWithProvider() {
+public ResponseEntity<?> loginWithProvider() {
     try {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -195,82 +191,81 @@ public ResponseEntity<?> resentCode(String email) throws MessagingException{
                 oauthToken.getAuthorizedClientRegistrationId(),
                 oauthToken.getName()
             );
-                if (authorizedClient != null) {
+
+            if (authorizedClient != null) {
                 Map<String, Object> userAttributes = oauthToken.getPrincipal().getAttributes();
                 String email = (String) userAttributes.get("email");
                 String name = (String) userAttributes.get("name");
                 Optional<User> user = repository.findByEmail(email);
-                String token=null;
+                String token = null;
                 User current;
+
                 if (user.isPresent()) {
                     current = user.get();
-                    if(!user.get().getProvider().equalsIgnoreCase(authorizedClient.getClientRegistration().getClientName())) {
-                    return ResponseEntity.ok().body("you have aready account by same email by account , go and login by your account");
-                    }} else {
-                    User newUser =createUser(email);
-                  completeDetailsUserProvider(newUser, authorizedClient, userAttributes, name);
-                   token=jwtUtil.generateToken(new CustomUserDetails(newUser)); 
-                  newUser.setToken(token);
-                  repository.save(newUser);
+                    if (!current.getProvider().equalsIgnoreCase(authorizedClient.getClientRegistration().getClientName())) {
+                    	
+                        return ResponseEntity.badRequest().body("You already have an account with this email using " +current.getProvider()+ "Please log in with."+current.getProvider());
+                    }
+                } else {
+                    User newUser = createUser(email);
+                    completeDetailsUserProvider(newUser, authorizedClient, userAttributes, name);
+                    token = jwtUtil.generateToken(new CustomUserDetails(newUser));
+                    newUser.setToken(token);
+                    repository.save(newUser);
                     current = newUser;
-                } 
-                AuthResponse authResponse=new AuthResponse(current.getId(),token);
-                return ResponseEntity.ok(authResponse); 
-                
+                }
+                token = jwtUtil.generateToken(new CustomUserDetails(current));
+                current.setToken(token);
+                repository.save(current);
+
+                AuthResponse authResponse = new AuthResponse(current.getId(), token);
+                return ResponseEntity.ok(authResponse);
+
             } else {
-                return ResponseEntity.status(401).body("Authorized client not found");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorized client not found");
             }
         } else {
-            return ResponseEntity.status(401).body("Authentication is not OAuth2-based");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication is not OAuth2-based");
         }
     } catch (Exception e) {
-        return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
     }
 }
 
-//creating newUser+ some details which share between user by google and user by face book
 private User createUser(String email) {
-	User newUser = new User();
-	Optional<Role> userRole = roleRepository.findByRoleName("USER");
-	Role role;
-	        
-	        if (!userRole.isPresent()) {
-	            role = new Role("USER", "write paragraphs to become films");
-	            roleRepository.save(role);
-	        }
+    User newUser = new User();
+    Role role = roleRepository.findByRoleName("USER").orElseGet(() -> {
+        Role newRole = new Role("USER", "write paragraphs to become films");
+        roleRepository.save(newRole);
+        return newRole;
+    });
 
-	        Set<Role> roles = new HashSet<>();
-	        roles.add(userRole.get()); 
+    Set<Role> roles = new HashSet<>();
+    roles.add(role);
 
-		
-      newUser.setEmail(email);
-      newUser.setPassword(encoder.encode(UUID.randomUUID().toString()));
-      newUser.setRoles(roles);
-      newUser.setStatus(true);
-	
-	return newUser;
-	
+    newUser.setEmail(email);
+    newUser.setPassword(encoder.encode(UUID.randomUUID().toString()));
+    newUser.setRoles(roles);
+    newUser.setStatus(true);
+
+    return newUser;
 }
 
-//completeing details user provider as nature user (facebook or google)
- private void completeDetailsUserProvider(User newUser, OAuth2AuthorizedClient authorizedClient
-		 , Map<String, Object> userAttributes,String name) {
-	 if (authorizedClient.getClientRegistration().getClientName().equalsIgnoreCase("facebook")) {
-         newUser.setFirstName(name);
-         newUser.setProvider("facebook");
-         newUser.setLastName(name);
-     }
 
-     if (authorizedClient.getClientRegistration().getClientName().equalsIgnoreCase("google")) {
-         newUser.setFirstName((String) userAttributes.get("given_name"));
-         newUser.setProvider("google");
-         newUser.setLastName((String) userAttributes.get("family_name"));
-     } 
-	 
-	 
-	 
- }
-
+private void completeDetailsUserProvider(User newUser, OAuth2AuthorizedClient authorizedClient, Map<String, Object> userAttributes, String name) {
+    switch (authorizedClient.getClientRegistration().getClientName().toLowerCase()) {
+        case "facebook":
+            newUser.setFirstName(name);
+            newUser.setProvider("facebook");
+            newUser.setLastName(name);
+            break;
+        case "google":
+            newUser.setFirstName((String) userAttributes.get("given_name"));
+            newUser.setProvider("google");
+            newUser.setLastName((String) userAttributes.get("family_name"));
+            break;
+    }
+}
 
 
 

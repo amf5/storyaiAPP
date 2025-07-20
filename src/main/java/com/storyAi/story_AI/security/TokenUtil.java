@@ -1,6 +1,6 @@
 package com.storyAi.story_AI.security;
 
-import java.security.Key;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+
 import org.springframework.stereotype.Component;
 
 import com.storyAi.story_AI.entity.CustomUserDetails;
@@ -18,7 +18,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Component
@@ -45,7 +45,7 @@ public class TokenUtil {
     public Claims getAllClaimsFromToken(String token) {
         try {
             return Jwts.parserBuilder()
-                       .setSigningKey(SECRET_KEY) // استخدام المفتاح السري
+                       .setSigningKey(SECRET_KEY) 
                        .build()
                        .parseClaimsJws(token)
                        .getBody();
@@ -54,7 +54,7 @@ public class TokenUtil {
         }
     }
 
-    // التحقق من صحة التوكين
+    
     public boolean validateToken(String token, CustomUserDetails userDetails) {
         String email = getEmailFromToken(token);
         return (email.equals(userDetails.getEmail()) 
@@ -62,7 +62,7 @@ public class TokenUtil {
                 && validateTokenSignature(token));
     }
 
-    // التحقق من صحة التوكن بناءً على التوقيع
+    
     public boolean validateTokenSignature(String token) {
         try {
             Jwts.parserBuilder()
@@ -75,20 +75,19 @@ public class TokenUtil {
         }
     }
 
-    // التحقق مما إذا كان التوكين قد انتهت صلاحيته
+   
     public boolean isTokenExpired(String token) {
         final Date expirationDate = getExpirationDateFromToken(token);
         return expirationDate.before(new Date());
     }
 
-    // استخراج تاريخ انتهاء الصلاحية من التوكين
+   
     private Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
     }
 
-    // توليد التوكين قصير المدى
-  
-    // استخراج التوكين من الطلب
+   
+    
     public String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
@@ -106,7 +105,18 @@ public Long getIdFromBearerJwt(String bearerToken ) {
 	
 	
 }
-    // توليد التوكين
+
+
+public Long getIdFromJwtWithoutBearer(String token) {
+
+	if (token != null ) {
+       
+        return getClaimFromToken(token, claims -> claims.get("userId", Long.class));    
+    }
+    return null;
+	
+}
+    
     public String generateToken(CustomUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userName", userDetails.getFirstname() + " " + userDetails.getLastname());

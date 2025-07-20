@@ -6,6 +6,7 @@ import com.storyAi.story_AI.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
@@ -22,14 +23,11 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
- // ✅ استخدام الـ CorsFilter الصحيح
-
 import java.util.List;
 
 @EnableWebSecurity
 @Configuration
+@Order(2)
 public class SecurityConfiguration {
 
     @Autowired
@@ -63,27 +61,31 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+        .securityMatcher("/**") 
         .cors(cors -> cors.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOrigins(List.of("*")); // السماح لكل النطاقات
+            config.setAllowedOrigins(List.of("*")); 
             config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
             config.setAllowedHeaders(List.of("*"));
             config.setAllowCredentials(false);
             return config;
         }))
-        .csrf(csrf -> csrf.disable()) // تعطيل CSRF
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ضبط السيشن
+       
+        .csrf(csrf -> csrf.disable()) 
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/storyai/auth/login", "/oauth2/authorization/google",
+            		 .requestMatchers("/ws-books/**").permitAll()
+                .requestMatchers("/storyai/auth/login", "/oauth2/authorization/google","/storyai/auth/test-send",
                 		"/storyai/auth/provider", "/login/oauth2/code/google","/storyai/auth/signup",
-                		"/storyai/auth/resentcode","/storyai/auth/good","/storyai/auth/activate","/storyai/auth/forgot").permitAll()
+                		"/storyai/auth/resentcode","/storyai/auth/good","/storyai/auth/activate","/storyai/auth/forgot","/favicon.ico","ai-websocket","/f.html").permitAll()
                 .requestMatchers("/user/**").hasRole("USER") 
                
                 .anyRequest().authenticated()
             )
             .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .oauth2Login(oauth2 -> oauth2
-                .defaultSuccessUrl("/dashboard", true)
+                
                 .successHandler((request, response, authentication) -> {
                     if (authentication instanceof OAuth2AuthenticationToken) {
                         request.getSession(true);
@@ -96,20 +98,20 @@ public class SecurityConfiguration {
         http.addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-    @Bean
+   /* @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5500")); // السماح للـ frontend
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // السماح بجميع الطلبات
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // السماح بالرؤوس المهمة
-        configuration.setAllowCredentials(true); // السماح بالمصادقة
+        configuration.setAllowedOrigins(List.of("http://localhost:5500")); 
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); 
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); 
+        configuration.setAllowCredentials(true); 
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
        
 
         return source;
-    }
+    }*/
 
     
 }

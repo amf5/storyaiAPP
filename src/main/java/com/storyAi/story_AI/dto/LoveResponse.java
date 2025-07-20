@@ -10,27 +10,16 @@ private String outhor;
 private String language;
 private String about;
 private String introduction;
-private List<String>pages;
+private String page;
 private String coverImage;
 private LocalDateTime createdBook;
-/**
- * 
- */
+
 public LoveResponse() {
 	super();
 }
-/**
- * @param lovedAt
- * @param nameBook
- * @param outhor
- * @param language
- * @param about
- * @param introduction
- * @param pages
- * @param coverImage
- */
+
 public LoveResponse(LocalDateTime lovedAt, String nameBook, String outhor, String language, String about,
-		String introduction, List<String> pages, String coverImage,LocalDateTime createdBook) {
+		String introduction, String page, String coverImage,LocalDateTime createdBook) {
 	super();
 	this.lovedAt = lovedAt;
 	this.nameBook = nameBook;
@@ -38,7 +27,7 @@ public LoveResponse(LocalDateTime lovedAt, String nameBook, String outhor, Strin
 	this.language = language;
 	this.about = about;
 	this.introduction = introduction;
-	this.pages = pages;
+	this.page = page;
 	this.coverImage = coverImage;
 	this.createdBook=createdBook;
 }
@@ -84,11 +73,11 @@ public String getIntroduction() {
 public void setIntroduction(String introduction) {
 	this.introduction = introduction;
 }
-public List<String> getPages() {
-	return pages;
+public String getPage() {
+	return page;
 }
-public void setPages(List<String> pages) {
-	this.pages = pages;
+public void setPage(String page) {
+	this.page = page;
 }
 public String getCoverImage() {
 	return coverImage;

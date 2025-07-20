@@ -18,8 +18,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8"); // يضمن دعم الأحرف غير الإنجليزية
-
+        response.setCharacterEncoding("UTF-8"); 
         String jsonResponse = String.format("{\"error\": \"Unauthorized: Invalid or missing token.\", \"message\": \"%s\"}",
                 authException.getMessage());
 

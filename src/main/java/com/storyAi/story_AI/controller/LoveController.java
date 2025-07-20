@@ -16,7 +16,7 @@ import com.storyAi.story_AI.security.TokenUtil;
 import com.storyAi.story_AI.service.LoveService;
 
 @RestController
-@RequestMapping("user/loves")
+@RequestMapping("/user/loves")
 public class LoveController {
 private final LoveService loveService;
 private final TokenUtil tokenUtil;
@@ -56,4 +56,21 @@ public ResponseEntity<?>cancelLove(@RequestParam("userId")Long userId,
 		}
 		return ResponseEntity.ok(loveService.getMyLoves(userId));
 	}
+	
+	
+	@GetMapping("/know/{userId}/book/{bookId}")
+	public ResponseEntity<String> knowLoveOrNo(@PathVariable("userId")Long userId,
+			@PathVariable Long bookId,
+			@RequestHeader("Authorization")String jwt) throws Exception{
+		
+		Long userIdCompare=tokenUtil.getIdFromBearerJwt(jwt);
+		if(!userId.equals(userIdCompare)||userIdCompare.equals(null)) {
+			   throw new Exception("Error....you dont have this id");
+		}
+		return ResponseEntity.ok(loveService.getStateOfColourLove(userIdCompare, bookId));
+		
+	}
+	
+	
+	
 }

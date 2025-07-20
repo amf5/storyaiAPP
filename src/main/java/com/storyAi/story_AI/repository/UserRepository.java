@@ -25,5 +25,7 @@ void deleteByEmail(String email);
 void clearExpiredVerificationCodes();
 @Query("SELECT u.token FROM User u WHERE u.email = :email")
 String findTokenByEmail(@Param("email") String email);
+@Query("SELECT (COUNT(u) > 0) FROM User u WHERE u.token = :token")
+boolean isAlreadyAtDatabase(@Param("token") String token);
 
 }

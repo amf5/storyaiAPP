@@ -75,11 +75,25 @@ public String CancelLove(Long userId,Long bookId)throws Exception {
 
 
 
+public String getStateOfColourLove(Long userId, Long bookId) throws Exception {
+	User user=userRepository.findById(userId).orElseThrow(()->new Exception("user not found"));
+	Book book=bookRepository.findById(bookId).orElseThrow(()->new Exception("book not found"));
+	if(!book.getUser().getId().equals(userId)) {
+		if(!book.isPublished()) {
+			throw new Exception("book not found");
+		}
+		
+	}
 
+Boolean colour=loveRepository.existsByUserIdAndBookBookId(userId, bookId);
 
-
-
-
+if(colour.equals(true)){
+	return "RED";
+}
+else {
+	return "WHITE";
+}
+}
 
 
 

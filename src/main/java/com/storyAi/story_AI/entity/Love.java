@@ -47,20 +47,14 @@ public Book getBook() {
 public void setBook(Book book) {
 	this.book = book;
 }
-/**
- * @param lovedAt
- * @param user
- * @param book
- */
+
 public Love(LocalDateTime lovedAt, User user, Book book) {
 	super();
 	this.lovedAt = lovedAt;
 	this.user = user;
 	this.book = book;
 }
-/**
- * 
- */
+
 public Love() {
 	super();
 }
